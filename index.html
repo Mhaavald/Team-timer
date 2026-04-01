@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Timer</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --panel2:#1f2937;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --accent:#22c55e;
+      --accent2:#38bdf8;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --border:#334155;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(180deg,#020617,#0f172a);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px;
+    }
+    h1{margin:0 0 6px;font-size:2rem}
+    p{color:var(--muted)}
+    .grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns: 1.2fr 1fr;
+    }
+    .card{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    input, button, select{
+      border-radius:10px;
+      border:1px solid var(--border);
+      padding:10px 12px;
+      font-size:14px;
+      background:#0b1220;
+      color:var(--text);
+    }
+    input{min-width:220px}
+    button{
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    button:hover{transform:translateY(-1px)}
+    .primary{background:var(--accent); color:#052e16; border-color:#16a34a; font-weight:700}
+    .secondary{background:var(--accent2); color:#082f49; border-color:#0ea5e9; font-weight:700}
+    .warning{background:var(--warn); color:#451a03; border-color:#d97706; font-weight:700}
+    .danger{background:var(--danger); color:#450a0a; border-color:#dc2626; font-weight:700}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:14px;
+    }
+    th, td{
+      border-bottom:1px solid var(--border);
+      padding:10px 8px;
+      text-align:left;
+      vertical-align:top;
+    }
+    th{color:#cbd5e1; font-weight:700}
+    .small{font-size:12px; color:var(--muted)}
+    .stat{
+      font-size:1.8rem;
+      font-weight:800;
+      margin-top:6px;
+    }
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .chip{
+      background:#0b1220;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      color:#cbd5e1;
+      font-size:12px;
+    }
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .actions{display:flex; gap:6px; flex-wrap:wrap}
+    .two-col{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    .subtle{color:var(--muted); margin:4px 0 0}
+    @media (max-width: 900px){
+      .grid, .two-col{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Team Timer</h1>
+    <p>Register when each team starts and finishes, calculate the average time, and see which teams are closest to the average. All data is saved locally in your browser.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Add team</h2>
+        <div class="row">
+          <input id="teamName" type="text" placeholder="Team name" />
+          <button class="primary" id="addTeamBtn">Add team</button>
+          <button id="seedBtn">Add sample teams</button>
+        </div>
+        <p class="subtle">Tip: open this file in any browser. It works offline.</p>
+
+        <div class="row" style="margin-top:14px">
+          <button class="secondary" id="exportBtn">Export data</button>
+          <button id="importBtn">Import data</button>
+          <input id="importFile" type="file" accept="application/json" style="display:none" />
+          <button class="danger" id="resetBtn">Clear all</button>
+        </div>
+
+        <table id="teamsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Team</th>
+              <th>Start</th>
+              <th>Finish</th>
+              <th>Elapsed</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <h2>Summary</h2>
+          <div class="small">Finished teams</div>
+          <div class="stat" id="finishedCount">0</div>
+
+          <div class="small" style="margin-top:16px">Average time</div>
+          <div class="stat mono" id="averageTime">--:--:--</div>
+
+          <div class="chips">
+            <div class="chip">Started: <span id="startedCount">0</span></div>
+            <div class="chip">Not started: <span id="notStartedCount">0</span></div>
+            <div class="chip">Running now: <span id="runningCount">0</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Closest to average</h2>
+          <p class="subtle">Teams with finished times nearest to the average elapsed time.</p>
+          <table id="closestTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Elapsed</th>
+                <th>Difference</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="grid-column:1 / -1">
+          <h2>Notes</h2>
+          <ul>
+            <li>Start records the current local time.</li>
+            <li>Finish records the current local time and calculates the elapsed time.</li>
+            <li>Average time uses only teams that have finished.</li>
+            <li>“Closest to average” is sorted by absolute difference from the average.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "team_timer_v1";
+  let teams = load();
+
+  const els = {
+    teamName: document.getElementById("teamName"),
+    addTeamBtn: document.getElementById("addTeamBtn"),
+    seedBtn: document.getElementById("seedBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    exportBtn: document.getElementById("exportBtn"),
+    importBtn: document.getElementById("importBtn"),
+    importFile: document.getElementById("importFile"),
+    teamsTableBody: document.querySelector("#teamsTable tbody"),
+    closestTableBody: document.querySelector("#closestTable tbody"),
+    finishedCount: document.getElementById("finishedCount"),
+    averageTime: document.getElementById("averageTime"),
+    startedCount: document.getElementById("startedCount"),
+    notStartedCount: document.getElementById("notStartedCount"),
+    runningCount: document.getElementById("runningCount"),
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+  }
+
+  function nowISO() {
+    return new Date().toISOString();
+  }
+
+  function formatDateTime(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return d.toLocaleString();
+  }
+
+  function formatDuration(ms) {
+    if (ms == null || Number.isNaN(ms) || ms < 0) return "—";
+    const totalSeconds = Math.floor(ms / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
+  }
+
+  function parseDuration(team) {
+    if (!team.startedAt || !team.finishedAt) return null;
+    return new Date(team.finishedAt) - new Date(team.startedAt);
+  }
+
+  function addTeam(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    teams.push({
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      name: trimmed,
+      startedAt: null,
+      finishedAt: null
+    });
+    save();
+    render();
+  }
+
+  function startTeam(id) {
+    const t = teams.find(x => x.id === id);
+    if (!t || t.startedAt) return;
+    t.startedAt = nowISO();
+    t.finishedAt = null;
+    save();
+    render();
+  }
+
+  function finishTeam(id) {
+    const t = teams.find(x => x.id === id);
+    if (!t || !t.startedAt || t.finishedAt) return;
+    t.finishedAt = nowISO();
+    save();
+    render();
+  }
+
+  function resetTeam(id) {
+    const t = teams.find(x => x.id === id);
+    if (!t) return;
+    t.startedAt = null;
+    t.finishedAt = null;
+    save();
+    render();
+  }
+
+  function deleteTeam(id) {
+    teams = teams.filter(x => x.id !== id);
+    save();
+    render();
+  }
+
+  function averageFinishedMs() {
+    const finished = teams.map(parseDuration).filter(v => v != null && v >= 0);
+    if (!finished.length) return null;
+    return finished.reduce((a,b) => a+b, 0) / finished.length;
+  }
+
+  function render() {
+    els.teamsTableBody.innerHTML = "";
+    teams.forEach((t, index) => {
+      const tr = document.createElement("tr");
+      const elapsed = parseDuration(t);
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td><strong>${escapeHtml(t.name)}</strong></td>
+        <td>${formatDateTime(t.startedAt)}</td>
+        <td>${formatDateTime(t.finishedAt)}</td>
+        <td class="mono">${formatDuration(elapsed)}</td>
+        <td>
+          <div class="actions">
+            <button data-action="start" data-id="${t.id}" ${t.startedAt ? "disabled" : ""}>Start</button>
+            <button class="warning" data-action="finish" data-id="${t.id}" ${(!t.startedAt || t.finishedAt) ? "disabled" : ""}>Finish</button>
+            <button data-action="reset" data-id="${t.id}">Reset</button>
+            <button class="danger" data-action="delete" data-id="${t.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      els.teamsTableBody.appendChild(tr);
+    });
+
+    const avg = averageFinishedMs();
+    const started = teams.filter(t => !!t.startedAt).length;
+    const finished = teams.filter(t => !!t.finishedAt).length;
+    const running = teams.filter(t => !!t.startedAt && !t.finishedAt).length;
+    const notStarted = teams.length - started;
+
+    els.finishedCount.textContent = String(finished);
+    els.averageTime.textContent = avg == null ? "--:--:--" : formatDuration(avg);
+    els.startedCount.textContent = String(started);
+    els.notStartedCount.textContent = String(notStarted);
+    els.runningCount.textContent = String(running);
+
+    renderClosest(avg);
+  }
+
+  function renderClosest(avg) {
+    els.closestTableBody.innerHTML = "";
+    if (avg == null) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" class="small">No finished teams yet.</td>`;
+      els.closestTableBody.appendChild(tr);
+      return;
+    }
+
+    const ranked = teams
+      .map(t => ({ team: t, elapsed: parseDuration(t) }))
+      .filter(x => x.elapsed != null && x.elapsed >= 0)
+      .map(x => ({ ...x, diff: Math.abs(x.elapsed - avg) }))
+      .sort((a, b) => a.diff - b.diff || a.elapsed - b.elapsed);
+
+    if (!ranked.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" class="small">No finished teams yet.</td>`;
+      els.closestTableBody.appendChild(tr);
+      return;
+    }
+
+    ranked.forEach((item, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td><strong>${escapeHtml(item.team.name)}</strong></td>
+        <td class="mono">${formatDuration(item.elapsed)}</td>
+        <td class="mono">${formatDuration(item.diff)}</td>
+      `;
+      els.closestTableBody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.innerText = text;
+    return div.innerHTML;
+  }
+
+  els.addTeamBtn.addEventListener("click", () => {
+    addTeam(els.teamName.value);
+    els.teamName.value = "";
+    els.teamName.focus();
+  });
+
+  els.teamName.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      addTeam(els.teamName.value);
+      els.teamName.value = "";
+    }
+  });
+
+  els.seedBtn.addEventListener("click", () => {
+    ["Team Alpha", "Team Bravo", "Team Charlie", "Team Delta"].forEach(name => {
+      if (!teams.some(t => t.name === name)) addTeam(name);
+    });
+  });
+
+  els.resetBtn.addEventListener("click", () => {
+    if (!confirm("Clear all teams and times?")) return;
+    teams = [];
+    save();
+    render();
+  });
+
+  els.teamsTableBody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    if (action === "start") startTeam(id);
+    if (action === "finish") finishTeam(id);
+    if (action === "reset") resetTeam(id);
+    if (action === "delete") deleteTeam(id);
+  });
+
+  els.exportBtn.addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(teams, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "team-timer-data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  els.importBtn.addEventListener("click", () => els.importFile.click());
+
+  els.importFile.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error("Invalid file");
+      teams = data.map(item => ({
+        id: item.id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+        name: String(item.name || "Unnamed team"),
+        startedAt: item.startedAt || null,
+        finishedAt: item.finishedAt || null
+      }));
+      save();
+      render();
+      alert("Import complete.");
+    } catch (err) {
+      alert("Could not import file.");
+    } finally {
+      e.target.value = "";
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
