@@ -317,8 +317,10 @@
     if (!t) return;
     const row = els.teamsTableBody.querySelector(`[data-edit-id="${id}"]`);
     if (!row) return;
+    const nameInput = row.querySelector('.edit-name');
     const startInput = row.querySelector('.edit-start');
     const finishInput = row.querySelector('.edit-finish');
+    if (nameInput.value.trim()) t.name = nameInput.value.trim();
     if (startInput.value) t.startedAt = new Date(startInput.value).toISOString();
     else t.startedAt = null;
     if (finishInput.value && t.startedAt) t.finishedAt = new Date(finishInput.value).toISOString();
@@ -371,7 +373,7 @@
         tr.setAttribute('data-edit-id', t.id);
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td><strong>${escapeHtml(t.name)}</strong></td>
+          <td><input type="text" class="edit-name" value="${escapeHtml(t.name)}" style="min-width:120px"></td>
           <td><label>Start</label><br><input type="datetime-local" step="1" class="edit-start" value="${toLocalDatetime(t.startedAt)}"></td>
           <td><label>Finish</label><br><input type="datetime-local" step="1" class="edit-finish" value="${toLocalDatetime(t.finishedAt)}"></td>
           <td class="mono">${formatDuration(elapsed)}</td>
