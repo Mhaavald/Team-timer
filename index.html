@@ -117,13 +117,13 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div id="liveClock" class="mono" style="position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(2,6,23,.95);border-bottom:1px solid var(--border);text-align:center;font-size:2.2rem;font-weight:800;color:var(--accent2);letter-spacing:2px;padding:8px 0;backdrop-filter:blur(8px)"></div>
+  <div class="wrap" style="padding-top:64px">
     <h1>Team Timer</h1>
     <p>Register when each team starts and finishes, calculate the average time, and see which teams are closest to the average. All data is saved locally in your browser.</p>
 
     <div class="grid">
       <div class="card">
-        <div class="mono" id="liveClock" style="font-size:2.2rem;font-weight:800;text-align:center;padding:10px 0 6px;color:var(--accent2);letter-spacing:2px"></div>
         <h2>Add team</h2>
         <div class="row">
           <input id="teamName" type="text" placeholder="Team name" />
