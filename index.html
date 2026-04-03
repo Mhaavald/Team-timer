@@ -241,7 +241,7 @@
   function formatDateTime(iso) {
     if (!iso) return "—";
     const d = new Date(iso);
-    return d.toLocaleString();
+    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
   }
 
   function formatDuration(ms) {
@@ -305,11 +305,11 @@
 
   let editingId = null;
 
-  function toLocalDatetime(iso) {
+  function toLocalTime(iso) {
     if (!iso) return '';
     const d = new Date(iso);
     const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
   function saveEdit(id) {
@@ -321,10 +321,22 @@
     const startInput = row.querySelector('.edit-start');
     const finishInput = row.querySelector('.edit-finish');
     if (nameInput.value.trim()) t.name = nameInput.value.trim();
-    if (startInput.value) t.startedAt = new Date(startInput.value).toISOString();
-    else t.startedAt = null;
-    if (finishInput.value && t.startedAt) t.finishedAt = new Date(finishInput.value).toISOString();
-    else t.finishedAt = null;
+    if (startInput.value) {
+      const base = t.startedAt ? new Date(t.startedAt) : new Date();
+      const [h,m,s] = startInput.value.split(':').map(Number);
+      base.setHours(h, m, s || 0, 0);
+      t.startedAt = base.toISOString();
+    } else {
+      t.startedAt = null;
+    }
+    if (finishInput.value && t.startedAt) {
+      const base = t.finishedAt ? new Date(t.finishedAt) : new Date();
+      const [h,m,s] = finishInput.value.split(':').map(Number);
+      base.setHours(h, m, s || 0, 0);
+      t.finishedAt = base.toISOString();
+    } else {
+      t.finishedAt = null;
+    }
     editingId = null;
     save();
     render();
@@ -374,8 +386,8 @@
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td><input type="text" class="edit-name" value="${escapeHtml(t.name)}" style="min-width:120px"></td>
-          <td><label>Start</label><br><input type="datetime-local" step="1" class="edit-start" value="${toLocalDatetime(t.startedAt)}"></td>
-          <td><label>Finish</label><br><input type="datetime-local" step="1" class="edit-finish" value="${toLocalDatetime(t.finishedAt)}"></td>
+          <td><label>Start</label><br><input type="time" step="1" class="edit-start" value="${toLocalTime(t.startedAt)}"></td>
+          <td><label>Finish</label><br><input type="time" step="1" class="edit-finish" value="${toLocalTime(t.finishedAt)}"></td>
           <td class="mono">${formatDuration(elapsed)}</td>
           <td>
             <div class="actions">${actionButtons}</div>
