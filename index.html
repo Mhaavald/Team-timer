@@ -128,6 +128,7 @@
         <div class="row">
           <input id="teamName" type="text" placeholder="Team name" />
           <button class="primary" id="addTeamBtn">Add team</button>
+          <button id="add5Btn">Add 5 teams</button>
           <button id="seedBtn">Add sample teams</button>
         </div>
         <p class="subtle">Tip: open this file in any browser. It works offline.</p>
@@ -207,6 +208,7 @@
   const els = {
     teamName: document.getElementById("teamName"),
     addTeamBtn: document.getElementById("addTeamBtn"),
+    add5Btn: document.getElementById("add5Btn"),
     seedBtn: document.getElementById("seedBtn"),
     resetBtn: document.getElementById("resetBtn"),
     exportBtn: document.getElementById("exportBtn"),
@@ -463,6 +465,15 @@
     return div.innerHTML;
   }
 
+  function nextTeamNumber() {
+    let max = 0;
+    teams.forEach(t => {
+      const m = t.name.match(/^Team #(\d+)$/);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return max + 1;
+  }
+
   els.addTeamBtn.addEventListener("click", () => {
     addTeam(els.teamName.value);
     els.teamName.value = "";
@@ -473,6 +484,13 @@
     if (e.key === "Enter") {
       addTeam(els.teamName.value);
       els.teamName.value = "";
+    }
+  });
+
+  els.add5Btn.addEventListener("click", () => {
+    let n = nextTeamNumber();
+    for (let i = 0; i < 5; i++) {
+      addTeam(`Team #${n++}`);
     }
   });
 
