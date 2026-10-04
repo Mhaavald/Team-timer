@@ -192,6 +192,7 @@
           <ul>
             <li>Start records the current local time.</li>
             <li>Finish records the current local time and calculates the elapsed time.</li>
+            <li>Edit start and finish times by typing HH:MM:SS (24-hour time, including seconds).</li>
             <li>Average time uses only teams that have finished.</li>
             <li>“Closest to average” is sorted by absolute difference from the average.</li>
           </ul>
@@ -322,6 +323,7 @@
     const nameInput = row.querySelector('.edit-name');
     const startInput = row.querySelector('.edit-start');
     const finishInput = row.querySelector('.edit-finish');
+    if (!startInput.reportValidity() || !finishInput.reportValidity()) return;
     if (nameInput.value.trim()) t.name = nameInput.value.trim();
     if (startInput.value) {
       const base = t.startedAt ? new Date(t.startedAt) : new Date();
@@ -388,8 +390,8 @@
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td><input type="text" class="edit-name" value="${escapeHtml(t.name)}" style="min-width:120px"></td>
-          <td><label>Start (HH:MM:SS)</label><br><input type="time" step="1" class="edit-start" value="${toLocalTime(t.startedAt)}"></td>
-          <td><label>Finish (HH:MM:SS)</label><br><input type="time" step="1" class="edit-finish" value="${toLocalTime(t.finishedAt)}"></td>
+          <td><label>Start (HH:MM:SS)<br><input type="text" class="edit-start" placeholder="HH:MM:SS" pattern="([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?" title="Enter a 24-hour time as HH:MM:SS, e.g. 14:30:05" value="${toLocalTime(t.startedAt)}"></label></td>
+          <td><label>Finish (HH:MM:SS)<br><input type="text" class="edit-finish" placeholder="HH:MM:SS" pattern="([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?" title="Enter a 24-hour time as HH:MM:SS, e.g. 14:30:05" value="${toLocalTime(t.finishedAt)}"></label></td>
           <td class="mono">${formatDuration(elapsed)}</td>
           <td>
             <div class="actions">${actionButtons}</div>
