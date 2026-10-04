@@ -388,8 +388,8 @@
         tr.innerHTML = `
           <td>${index + 1}</td>
           <td><input type="text" class="edit-name" value="${escapeHtml(t.name)}" style="min-width:120px"></td>
-          <td><label>Start</label><br><input type="time" step="1" class="edit-start" value="${toLocalTime(t.startedAt)}"></td>
-          <td><label>Finish</label><br><input type="time" step="1" class="edit-finish" value="${toLocalTime(t.finishedAt)}"></td>
+          <td><label>Start (HH:MM:SS)</label><br><input type="time" step="1" class="edit-start" value="${toLocalTime(t.startedAt)}"></td>
+          <td><label>Finish (HH:MM:SS)</label><br><input type="time" step="1" class="edit-finish" value="${toLocalTime(t.finishedAt)}"></td>
           <td class="mono">${formatDuration(elapsed)}</td>
           <td>
             <div class="actions">${actionButtons}</div>
